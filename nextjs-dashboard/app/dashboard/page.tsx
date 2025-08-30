@@ -6,15 +6,25 @@ import { fetchRevenue, fetchLatestInvoices, fetchCardData } from '@/app/lib/data
 
 
 export default async function Page() {
-    // シーケンシャルにデータを取得しているため、request waterfallsというデータ取得待ちが連続しておきる
-    const revenue = await fetchRevenue();
-    const latestInvoices = await fetchLatestInvoices();
+    // 一部データが取得できないことを許容する
+    const [revRes, invRes, cardRes] = await Promise.allSettled([
+        fetchRevenue(),
+        fetchLatestInvoices(),
+        fetchCardData(),
+    ]);
+
+    const revenue = revRes.status === 'fulfilled' ? revRes.value : [];
+    const latestInvoices = invRes.status === 'fulfilled' ? invRes.value : [];
     const {
         numberOfInvoices,
         numberOfCustomers,
         totalPaidInvoices,
         totalPendingInvoices,
-    } = await fetchCardData();
+    } =
+        cardRes.status === 'fulfilled'
+            ? cardRes.value
+            : { numberOfInvoices: 0, numberOfCustomers: 0, totalPaidInvoices: '$0', totalPendingInvoices: '$0' };
+
     return (
         <main>
             <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
