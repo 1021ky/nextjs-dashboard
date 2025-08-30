@@ -6,6 +6,7 @@ import { fetchRevenue, fetchLatestInvoices, fetchCardData } from '@/app/lib/data
 
 
 export default async function Page() {
+    // シーケンシャルにデータを取得しているため、request waterfallsというデータ取得待ちが連続しておきる
     const revenue = await fetchRevenue();
     const latestInvoices = await fetchLatestInvoices();
     const {
